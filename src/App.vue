@@ -1,55 +1,36 @@
 <template>
-  <div class="gxs-vh">
-    <input type="text" v-model="city" placeholder="请输入城市">
-    <input type="text" placeholder="请输入查询公交" v-model="bus">
-    <button type="button" v-on:click="search()">查询</button>
-    <div class="" v-for="(item,index) in busRoutes">
-      <div class="">{{index+1}}</div>
-      <div class="">{{item.key_name}}</div>
-      <div class="">{{item.terminal_name}} - {{item.front_name}}</div>
-      <div class="" v-for="(bus, index) in item.stationdes">
-        {{index}}{{bus.name}}
-      </div>
-    </div>
-  </div>
+
 </template>
 <script type="text/ecmascript-6">
   export default {
     data () {
       return {
-        city: '北京',
-        bus: '476',
-        busRoutes: null
-      }
-    },
-    components: {},
-    methods: {
-      search () {
-        this.$http.jsonp('http://op.juhe.cn/189/bus/busline', {
-          params: {
-            dtype: '',
-            city: this.city,
-            bus: this.bus,
-            key: '4e2c3e04007647aff7d43b8697fe16cc'
-          }
-        }).then(function (response) {
-          console.log(response.data)
-          if (response.data.reason === 'success') {
-            this.busRoutes = response.data.result
-          } else {
-            this.busRoutes = '未查询到数据'
-          }
-        })
+        data: null,
+        defUrl: 'https://free-api.heweather.com/v5', // 统一的api请求地址
+        key: '', // 这里输入自己的key，不要直接拿我的
+        forecast: null,
+        now: null,
+        hourly: null,
+        suggestion: null,
+        basic: null,
+        city: null
       }
     },
     mounted () {
-
-    },
-    computed: {},
-    watch: {}
+      this.$http.get(this.defUrl + '/weather', {// 获取全部数据
+        params: {
+          city: '北京',
+          key: this.key
+        }
+      }).then(function (response) {
+        this.forecast = response.data.HeWeather5[0].daily_forecast // 7-10天预报
+        this.now = response.data.HeWeather5[0].now // 实况天气
+        this.hourly = response.data.HeWeather5[0].hourly_forecast // 每小时预报（逐小时预报），最长10天
+        this.suggestion = response.data.HeWeather5[0].suggestion // 生活指数
+        this.basic = response.data.HeWeather5[0].basic
+        this.city = response.data.HeWeather5[0].aqi
+        this.getImg(this.now.cond.code)
+      })
+    }
   }
 </script>
-
-<style>
-
-</style>
